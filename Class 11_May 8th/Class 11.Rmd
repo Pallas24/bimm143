@@ -1,0 +1,26 @@
+---
+title: "Bioinformatics Class 11"
+author: "Pallas Duong"
+date: "5/8/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##PDB statistics 
+
+Download CSV file from PDB database from <https://www.rcsb.org/stats/summary>. Read this into R and determine fraction of X-ray structure 
+
+```{r}
+pdb.stats <- read.csv("Data Export Summary.csv")
+```
+
+Lets calculate something 
+```{r}
+percent <- (pdb.stats$Total/sum(pdb.stats$Total))*100
+names(percent) <- pdb.stats$Experimental.Method
+percent 
+```
+
