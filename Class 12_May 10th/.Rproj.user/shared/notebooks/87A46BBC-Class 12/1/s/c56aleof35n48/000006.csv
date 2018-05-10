@@ -1,0 +1,2 @@
+"0","protein <- trim.pdb(hiv, ""protein"")"
+"0","ligand <-  trim.pdb(hiv, ""ligand"")"

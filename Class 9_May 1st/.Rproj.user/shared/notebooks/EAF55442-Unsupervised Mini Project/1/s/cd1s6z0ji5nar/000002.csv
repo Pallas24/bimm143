@@ -1,0 +1,2 @@
+"0","diagnosis <- as.numeric(wisc.data)"
+"2","NAs introduced by coercion"
