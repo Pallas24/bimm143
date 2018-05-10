@@ -9,7 +9,7 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-#Section 1: In silico docking of drugs of HIV-1 protease
+#**Section 1: In silico docking of drugs of HIV-1 protease**
 ##1.1: Obtaining and inspecting our input structure 
 
 Load Bio3d package 
@@ -43,6 +43,8 @@ write.pdb(ligand, "1hsg_ligand.pdb")
 
 ##1.5: Preapre a docking configuration file
 
+#**Section 2: Docking ligands into HIV-1 protease**
+##2.1: Docking indinavir into HIV-1 protease 
 
 
 
