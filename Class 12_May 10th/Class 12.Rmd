@@ -24,6 +24,7 @@ hiv <- read.pdb(file.name)
 hiv
 ```
 
+##1.2: Prepare initial protein and ligand input files 
 Select out protein only and ligand only
 ```{r}
 protein <- trim.pdb(hiv, "protein")
@@ -36,7 +37,11 @@ write.pdb(protein, "1hsg_protein.pdb")
 write.pdb(ligand, "1hsg_ligand.pdb")
 ```
 
+##1.3: Using AutoDockTools to setup protein docking input 
 
+##1.4: Prepare the ligand 
+
+##1.5: Preapre a docking configuration file
 
 
 
