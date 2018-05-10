@@ -1,0 +1,255 @@
+---
+title: "Bioinformatics Class 11"
+author: "Pallas Duong"
+date: "5/8/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Section 1
+##PDB statistics 
+
+Download CSV file from PDB database from <https://www.rcsb.org/stats/summary>. Read this into R and determine fraction of X-ray structure 
+
+```{r}
+pdb.stats <- read.csv("Data Export Summary.csv")
+```
+
+Lets calculate something 
+```{r}
+percent <- (pdb.stats$Total/sum(pdb.stats$Total))*100
+names(percent) <- pdb.stats$Experimental.Method
+percent 
+```
+
+#Section 3
+##3.1: Getting started 
+```{r}
+library("bio3d")
+```
+
+##3.2: Bio3D functions and their typical usage
+```{r}
+example(plot.bio3d)
+```
+
+##3.3: Working with individual PDB files
+```{r}
+#Reading PDB file data into R
+pdb <- read.pdb("1hsg")
+pdb
+```
+
+```{r}
+#Find the attributes
+attributes(pdb)
+
+head(pdb$atom)
+
+#Print the subset of $atom data for the first 2 atoms
+pdb$atom[1:2, c("eleno", "elety", "x", "y", "z")]
+
+```
+
+```{r}
+#Individual $atom records
+pdb$atom$elety[1:2]
+
+plot.bio3d(pdb$atom$b[pdb$calpha], sse = pdb, ylab = "B-factor")
+```
+
+```{r}
+#Print a summary of the coordinate data in $xyz
+pdb$xyz
+```
+
+```{r}
+#Exame the row and column dimensions
+dim(pdb$xyz)
+```
+
+```{r}
+#Print coordinates for the first 2 atoms
+pdb$xyz[1, atom2xyz(1:2)]
+```
+
+3.5: Atom selection
+```{r}
+#Select all C-alpha atoms 
+ca.inds <- atom.select(pdb, "calpha")
+ca.inds
+```
+
+```{r}
+#Print details of the first few selected atoms 
+head(pdb$atom[ca.inds$atom,])
+```
+
+```{r}
+#Select xyz coordinates 
+head(pdb$xyz[, ca.inds$xyz])
+```
+
+```{r}
+#Select chain A
+a.inds <- atom.select(pdb, chain = "A")
+
+#Select C-alphas of chain A
+ca.inds2 <- atom.select(pdb, "calpha", chain = "A")
+
+#we can combine multiple selection criteria to return their intersection 
+cab.inds <- atom.select(pdb, elety = c("CA", "CB"), chain = "A", resno = 10:20)
+```
+
+Write pdb
+```{r}
+inds <- atom.select(pdb, "calpha")
+inds
+head(pdb$atom[inds$atom,])
+```
+```{r}
+#Trim
+ca.pdb <- trim.pdb(pdb,inds = inds)
+ca.pdb
+
+```
+ 
+```{r}
+#Write pdb
+write.pdb(ca.pdb, file = "calpha_only.pdb")
+```
+
+#Section 4
+##4.2: Aligning mulitple structures
+```{r}
+#Download some example PDB file
+ids <- c("1TND_B", "1AGR_A", "1TAG_A","1GG2_A","1KJY_A","4G5Q_A")
+files <-  get.pdb(ids, split = TRUE)
+```
+
+```{r}
+#Etract and align the chains we are interested in 
+pdbs <- pdbaln(files, fit = TRUE)
+
+#Print to screen a summary of the 'pdbs' object
+pdbs
+```
+
+```{r}
+#Access the first 5 rows, and 8 columns 
+pdbs$ali[1:5, 1:8]
+```
+
+```{r}
+#Associated residues numbers
+pdbs$resno[1:5, 1:8]
+
+```
+
+```{r}
+#Inspect alignmnet for gaps
+gaps <- gap.inspect(pdbs$ali)
+
+#Indices of non-gap columns 
+head(gaps$f.inds)
+
+#Access non-gap columns 
+pdbs$ali[,gaps$f.inds]
+```
+
+##4.3: Basic structure analysis
+```{r}
+#Calculate sequence identity
+seqidentity(pdbs)
+
+#Calculate RMSD
+rmsd(pdbs)
+rd <- rmsd(pdbs)
+
+#Clustering 
+hc <- hclust(as.dist(rd))
+grps <- cutree(hc, k= 3)
+
+#Plot results as dendrogram
+hclustplot(hc, k = 3)
+```
+
+##4.4: principal component analysis 
+```{r}
+#Perform PCA
+pc <- pca(pdbs)
+plot(pc, col = grps)
+```
+
+#Section 5
+##5.1: Search and retrieve Adenylate kinase structures 
+
+```{r, cache= TRUE}
+aa <- get.seq("1ake_A")
+
+#blast or hmmer search
+b <- blast.pdb(aa)
+```
+
+```{r}
+#Plot a summary of search results 
+hits <- plot(b)
+```
+
+```{r}
+head(hits$pdb.id)
+```
+
+```{r}
+#Fetch PDBs
+files <- get.pdb(hits$pdb.id, path = "pdbs", split = TRUE, gzip = TRUE)
+
+#Align structures
+pdbs <- pdbaln(files)
+
+#Vector containing PDB
+ids <- basename.pdb(pdbs$id)
+
+#Draw schematic alignmnet 
+plot(pdbs, labels = ids)
+```
+
+##5.2: Sequence conservation analysis 
+```{r}
+#Calculate sequence consevation
+cons <- conserv(pdbs, method = "entropy22")
+
+#SSE annotations 
+sse <- pdbs2sse(pdbs, ind = 1, rm.gaps = FALSE)
+
+#Plot conservation per residue 
+plotb3(cons, sse=sse, ylab = "Sequence entropy")
+```
+
+##5.4: Principal component analysis 
+```{r}
+#Find invariant core 
+core <- core.find(pdbs)
+
+#superimpose all structures to core 
+pdbs$xyz <- pdbfit(pdbs, core)
+
+#Perform PCA
+pc.xray <- pca(pdbs)
+```
+
+```{r}
+#Calculate RMSD
+rd <-  rmsd(pdbs)
+
+#Structure-based clustering
+hc.rd <- hclust(dist(rd))
+grps.rd <- cutree(hc.rd, k = 3)
+
+plot(pc.xray, 1:2, col = "grey50", bg = grps.rd, pch = 21, cex =1)
+
+```
+
