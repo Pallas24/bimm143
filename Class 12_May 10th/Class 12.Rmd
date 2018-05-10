@@ -1,0 +1,50 @@
+---
+title: "Bioinformatics Class 12"
+author: "Pallas Duong"
+date: "5/10/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Section 1: In silico docking of drugs of HIV-1 protease
+##1.1: Obtaining and inspecting our input structure 
+
+Load Bio3d package 
+```{r}
+library(bio3d)
+file.name <- get.pdb("1hsg")
+```
+
+Read PDB structure
+```{r}
+hiv <- read.pdb(file.name)
+hiv
+```
+
+Select out protein only and ligand only
+```{r}
+protein <- trim.pdb(hiv, "protein")
+ligand <-  trim.pdb(hiv, "ligand")
+```
+
+Write out these new PDB files so we can use them for docking
+```{r}
+write.pdb(protein, "1hsg_protein.pdb")
+write.pdb(ligand, "1hsg_ligand.pdb")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
