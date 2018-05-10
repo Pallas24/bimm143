@@ -59,6 +59,13 @@ ori <- read.pdb("ligand.pdbqt")
 rmsd(ori,res)
 ```
 
+```{r}
+inds.res <- atom.select(res, "noh")
+inds.mk <- atom.select(ligand, "noh")
+
+res$xyz[,inds.res$xyz]
+rmsd(ligand, res$xyz[,inds.res$xyz])
+```
 
 
 
